@@ -1,0 +1,2 @@
+import pos_promotion
+import pos_config

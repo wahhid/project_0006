@@ -1,2 +1,13 @@
 eclipse.preferences.version=1
+encoding//hw_proxy/__openerp__.py=utf-8
+encoding//hw_proxy/controllers/main.py=utf-8
+encoding//hw_serialescpos/__init__.py=utf-8
+encoding//hw_serialescpos/__openerp__.py=utf-8
+encoding//hw_serialescpos/controllers/main.py=utf-8
+encoding//jakc_pos_coupon/__openerp__.py=utf-8
+encoding//jakc_pos_credit_card/__openerp__.py=utf-8
+encoding//jakc_pos_credit_card/models/jakc_pos_credit_card.py=utf-8
+encoding//point_of_sale/point_of_sale.py=utf-8
+encoding//pos_mercury/models/pos_mercury.py=utf-8
+encoding//pos_promotion/__openerp__.py=utf-8
 encoding//pos_restaurant/restaurant.py=utf-8

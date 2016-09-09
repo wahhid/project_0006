@@ -1,0 +1,105 @@
+<?xml version="1.0"?>
+<openerp>
+	<data>
+		<!-- POS/POS COUPON -->
+        <record model="ir.ui.view" id="view_pos_coupon_form">
+            <field name="name">pos.coupon.form</field>
+            <field name="model">pos.coupon</field>						
+            <field name="type">form</field>						
+            <field name="arch" type="xml">
+                <form string="POS Coupon" version="7.0">
+                	<header>
+                		<button name="trans_open" string="Open" type="object" class="oe_highlight" states="draft"/>
+                		<button name="trans_generate" string="Generate" type="object" class="oe_highlight" states="open"/>
+                		
+ 						<button name="trans_close" string="Close" type="object" class="oe_highlight" states="open"/>
+ 						<button name="trans_re_open" string="Reopen" type="object" class="oe_highlight" states="done"/>               	
+                	</header>
+                	<sheet>
+	                    <group>                            
+	                        <field name="name"/>
+	                        <field name="start_date"/>
+	                        <field name="end_date"/>  
+	                        <field name="coupon_qty"/>
+	                        <field name="state"/>                  
+	                    </group>	                		                	
+	                    <notebook>
+	                    	<page string="Details">
+	                    		<field name="line_ids">
+	                    			<tree colors="green:state=='open';red:state=='done';">
+	                    				<field name="coupon_number"/>
+	                    				<field name="usage_date"/>
+	                    				<field name="state"/>
+	                    			</tree>
+	                    		</field>
+	                    	</page>
+	                    </notebook>
+                	</sheet>  
+                </form>
+            </field>
+        </record>
+		
+        <record model="ir.ui.view" id="view_pos_coupon_tree">
+            <field name="name">pos.coupon.tree</field>
+            <field name="model">pos.coupon</field>			
+            <field name="type">tree</field>						
+            <field name="arch" type="xml">
+                <tree string="POS Coupon">
+                    <field name="name"/>
+                    <field name="start_date"/>
+                    <field name="end_date"/>
+                    <field name="coupon_qty"/>
+                    <field name="state"/>		
+                </tree>
+            </field>
+        </record>
+        
+        
+        <!-- POS/ACTION -->
+        <!-- POS COUPON -->
+		<record model="ir.actions.act_window" id="action_pos_coupon">
+            <field name="name">Coupon</field>
+            <field name="res_model">pos.coupon</field>
+            <field name="view_mode">tree,form</field>
+        </record>	
+        
+        
+        <record model="ir.ui.view" id="view_account_journal_pos_coupon_form">
+            <field name="name">account.journal.pos.coupon.form</field>
+            <field name="model">account.journal</field>
+            <field name="inherit_id" ref="point_of_sale.view_account_journal_pos_user_form"/>
+            <field name="arch" type="xml">
+                <field name="amount_authorized_diff" position="after">
+                	<field name="iface_coupon"/>
+                </field>
+            </field>            
+        </record>
+        
+        <record id="view_pos_order_pos_coupon_form" model="ir.ui.view">
+          <field name="name">POS orders</field>
+          <field name="model">pos.order</field>
+          <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+          <field name="arch" type="xml">
+            <xpath expr="//field[@name='amount']" position="before">
+              <field name="coupon_number"/>
+            </xpath>
+          </field>
+        </record>
+        
+     	<menuitem id="menu_pos_coupon_root"
+                  parent="point_of_sale.menu_point_root"
+                  sequence="18"
+                  name="Coupon"
+                  groups="point_of_sale.group_pos_manager,point_of_sale.group_pos_user"
+                  />
+
+        <menuitem id="menu_pos_coupon"
+                  action="action_pos_coupon"
+                  parent="menu_pos_coupon_root"
+                  sequence="1"
+                  groups="point_of_sale.group_pos_manager,point_of_sale.group_pos_user"
+                  />
+                  
+        		
+	</data>
+</openerp>

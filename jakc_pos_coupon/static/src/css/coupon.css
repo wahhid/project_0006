@@ -1,0 +1,8 @@
+.pos .paymentline .coupon-button{
+    cursor: pointer;
+    text-align: center;
+}
+
+.pos .paymentline .coupon-button .couponnumber{
+	font-size: 8px;
+}

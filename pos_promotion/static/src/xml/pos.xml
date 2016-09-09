@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-extend="Orderline">
+        <t t-jquery=".product-name" t-operation="replace">
+            <t t-if="line.reason == undefined">
+                <span class="product-name" t-att-id="line.id">
+                    <t t-esc="line.get_product().display_name"/>
+                </span>
+            </t>
+            <t t-if="line.reason != undefined">
+                <span class="product-name" t-att-id="line.id">
+                    <a><i class="fa fa-gift promotion"><t t-esc="line.reason"/></i></a>
+                </span>
+            </t>
+
+        </t>
+    </t>
+
+    <t t-name="PromotionButton">
+        <div class='control-button'>
+            <i class='fa fa-star' />Check Promotions
+        </div>
+    </t>
+</templates>

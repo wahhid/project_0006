@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<openerp>
+    <data>
+
+
+        <record id="view_pos_promotion_form" model="ir.ui.view">
+            <field name="name">pos.promotion.form</field>
+            <field name="model">pos.promotion</field>
+            <field name="arch" type="xml">
+                <form string="Promotion">
+                    <header>
+                        <field name="state" widget="statusbar" clickable="True"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_left">
+                            <h1>
+                                <field name="name" class="oe_inline"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="sequence"/>
+                                <field name="type"/>
+                                <field name="method" attrs="{'required': [('type', '!=', 'product_detail')], 'invisible': [('type', '=', 'product_detail')]}"/>
+                                <field name="percent_total" attrs="{'required': [('method', '=', 'percent')], 'invisible': ['|', ('type', 'not in', ['total_order', 'product_category']), ('method', '!=', 'percent')]}"/>
+                                <field name="discount_total" attrs="{'required': [('method', '=', 'discount')], 'invisible': ['|', ('type', 'not in', ['total_order', 'product_category']), ('method', '!=', 'discount')]}"/>
+                                <field name="product_id" attrs="{'invisible': [('type', 'not in', ['product_category', 'total_order'])], 'required': [('type', 'in', ['product_category', 'total_order'])]}"/>
+                                <field name="min_total_order" attrs="{'invisible': [('type', 'not in', ['product_category', 'total_order'])], 'required': [('type', 'in', ['product_category', 'total_order'])]}"/>/>
+                            </group>
+                        </group>
+                        <group attrs="{'required': [('type', '=', 'product_category')], 'invisible': [('type', '!=', 'product_category')]}" context="{'promotion_point': True}">
+                            <separator string="Categories" colspan="4"/>
+                            <field name="categ_ids"  options="{'no_edit': True, 'no_create': True}" nolabel="1" colspan="4"/>
+                        </group>
+                        <group>
+                            <field name="promotion_line_ids" colspan="4" nolabel="True" attrs="{'required': [('type', '=', 'product_detail')], 'invisible': [('type', '!=', 'product_detail')]}">
+                                <tree string="Lines" editable="bottom">
+                                    <field name="sequence"/>
+                                    <field name="product_from_id"/>
+                                    <field name="min_qty"/>
+                                    <field name="product_to_id"/>
+                                    <field name="gift_qty"/>
+                                </tree>
+                                <form string="Lines">
+                                    <group>
+                                        <field name="sequence"/>
+                                        <field name="product_from_id"/>
+                                        <field name="min_qty"/>
+                                        <field name="product_to_id"/>
+                                        <field name="gift_qty"/>
+                                    </group>
+                                </form>
+                            </field>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_pos_promotion_tree" model="ir.ui.view">
+            <field name="name">pos.promotion.tree</field>
+            <field name="model">pos.promotion</field>
+            <field name="arch" type="xml">
+                <tree string="Promotions" colors="green: state  == 'active', gray: state  == 'draft'">
+                    <field name="sequence"/>
+                    <field name="name"/>
+                    <field name="type"/>
+                    <field name="method"/>
+                    <field name="percent_total"/>
+                    <field name="discount_total"/>
+                    <field name="min_total_order"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_pos_promotion_kanban" model="ir.ui.view">
+            <field name="name">pos.promotion.kanban</field>
+            <field name="model">pos.promotion</field>
+            <field name="arch" type="xml">
+                <kanban default_group_by="state">
+                    <field name="name"/>
+                    <field name="type"/>
+                    <field name="method"/>
+                    <field name="state" invisible="1"/>
+                    <field name="product_ids" invisible="1"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="oe_kanban_vignette oe_semantic_html_override">
+
+                                <div class="oe_kanban_details">
+                                    <h4>
+                                        <a type="open">
+                                             <field name="name"/>
+                                        </a>
+                                    </h4>
+                                    <div name="tags"/>
+                                    <ul>
+                                        <li>Type: <field name="type"></field></li>
+                                        <li>Method: <field name="method"></field></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <record id="view_pos_promotion_search" model="ir.ui.view">
+            <field name="name">pos.promotion.filter</field>
+            <field name="model">pos.promotion</field>
+            <field name="arch" type="xml">
+                <search string="Promotion filter">
+                    <field name="name"/>
+                    <field name="type"/>
+                    <field name="method"/>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_pos_promotion">
+            <field name="name">Promotions</field>
+            <field name="res_model">pos.promotion</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,kanban</field>
+        </record>
+
+        <menuitem id="pos_promotion"
+                  parent="point_of_sale.menu_point_root"
+                  sequence="17"
+                  name="Promotions"
+                  groups="point_of_sale.group_pos_manager,point_of_sale.group_pos_user"
+                  />
+
+        <menuitem id="pos_promotion_config"
+                  action="action_pos_promotion"
+                  parent="pos_promotion"
+                  sequence="1"
+                  groups="point_of_sale.group_pos_manager,point_of_sale.group_pos_user"
+                  />
+
+
+    </data>
+</openerp>
