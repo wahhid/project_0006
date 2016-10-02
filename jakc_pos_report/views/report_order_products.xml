@@ -35,8 +35,6 @@
 		           			<span t-esc="products['name']"/>
 	           			</strong>
 	           		</div>
-	          		
-	          		<t t-set="all_line_ids" t-value="pos_sales_details(products['id'], data['form'])"/>
 	           		
 	           		<table class="table table-condensed">
 	                    <thead>
@@ -46,22 +44,22 @@
 	                        <th class="text-center"><strong>Qty</strong></th>
 	                    </thead>
 	                    <tbody>
-	                        <tr t-foreach="all_line_ids[0]['transaction_total']" t-as="line_ids">
+	                        <tr t-foreach="pos_sales_details(products['id'], data['form'])" t-as="line_ids">
 	                            <td>
 	                                <span t-esc="formatLang(line_ids['date_order'], date_time=True)"/>
 	                            </td>
 	                            <td>
-	                                <span t-esc="line_ids['pos_name']"/>
-	                            </td>
-	                            <td>
-	                                [<t t-if="line_ids['code']">
-	                                    <span t-esc="line_ids['code']"/>
-	                                </t>]
 	                                <span t-esc="line_ids['name']"/>
 	                            </td>
+	                            <td>
+	                                [<t t-if="line_ids['default_code']">
+	                                    <span t-esc="line_ids['default_code']"/>
+	                                </t>]
+	                                <span t-esc="line_ids['name_template']"/>
+	                            </td>
 	                            <td class="text-center">
-	                                <span t-esc="formatLang(line_ids['qty'])"/>
-	                                <span t-esc="line_ids['uom']"/>
+	                                <span t-esc="formatLang(line_ids['total_qty'])"/>
+	                                <span t-esc="line_ids['product_uom_name']"/>
 	                            </td>
 	                        </tr>
 	                    </tbody>
@@ -74,36 +72,37 @@
 	                    </thead>
 	                    <tbody>
 	                    	
-	                        <tr t-foreach="all_line_ids[0]['product_total']" t-as="line_ids">
+	                        <tr t-foreach="per_product_bom_summary(products['id'], data['form'])" t-as="line_ids">
 	                            <td>
-	                                <strong>Total <span t-esc="line_ids['product_name']"/></strong>
+	                                <strong>Total <span t-esc="line_ids['name_template']"/></strong>
 	                            </td>
 	                            <td class="text-center">
 	                            	<strong>
-		                                <span t-esc="formatLang(line_ids['total'])"/>
-		                                <span t-esc="line_ids['uom']"/>
+		                                <span t-esc="formatLang(line_ids['total_qty'])"/>
+		                                <span t-esc="line_ids['product_uom_name']"/>
 	                                </strong>
 	                            </td>
 	                        </tr>
 	                    </tbody>
                 	</table>
+                	
 	           	</div>
 	           	<div>
-	           		<table class="table table-condensed">
+	        		<table class="table table-condensed">
 	                    <thead>
-	                        <th><strong>Total Summary</strong></th>
+	                        <th><strong>Total</strong></th>
 	                        <th class="text-center"><strong>Qty</strong></th>
 	                    </thead>
 	                    <tbody>
 	                    	
-	                        <tr t-foreach="product_final_total[0]" t-as="line_ids">
+	                        <tr t-foreach="bom_summary(data['form'])" t-as="line_ids">
 	                            <td>
-	                                <strong>Total <span t-esc="line_ids['product_name']"/></strong>
+	                                <strong>Total <span t-esc="line_ids['name_template']"/></strong>
 	                            </td>
 	                            <td class="text-center">
 	                            	<strong>
-		                                <span t-esc="formatLang(line_ids['total'])"/>
-		                                <span t-esc="line_ids['uom']"/>
+		                                <span t-esc="formatLang(line_ids['total_qty'])"/>
+		                                <span t-esc="line_ids['product_uom_name']"/>
 	                                </strong>
 	                            </td>
 	                        </tr>

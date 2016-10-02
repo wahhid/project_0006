@@ -25,8 +25,10 @@ class pos_details(report_sxw.rml_parse):
         return user_obj.search(self.cr, self.uid, [])
 
     def _get_selected_products(self, form):
-        product_obj = self.pool.get('product.template')
-        return product_obj.browse(self.cr, self.uid, form['product_ids'], [])
+        product_obj = self.pool.get('product.product')
+        product_args = [('product_tmpl_id','in',form['product_ids'])]
+        product_ids = product_obj.search(self.cr, self.uid, product_args) 
+        return product_obj.browse(self.cr, self.uid, product_ids, [])
     
     def _get_product_mrp_bom_lines(self, product_id):
         product_product_obj = self.pool.get('product.product')
@@ -47,22 +49,13 @@ class pos_details(report_sxw.rml_parse):
         else:
             return {}     
     
-    def _pos_sales_details(self, product_id, form):
+    def _pos_sales_details(self,product_id,form):
         pos_obj = self.pool.get('pos.order')
         user_obj = self.pool.get('res.users')
-    
-        repeat = 0
-        data = []
+        product_ids = []
+        product_ids.append(product_id)
+        product_ids.append(0)
         
-        transaction_total = []
-        product_total = []
-        product_final_total = []
-        
-        transaction_result = {}
-        product_result = {}
-        product_final_result = {}
-        
-        self.qty=0
         #user_ids = form['user_ids'] or self._get_all_users()
         company_id = user_obj.browse(self.cr, self.uid, self.uid).company_id.id
         user = self.pool['res.users'].browse(self.cr, self.uid, self.uid)
@@ -80,101 +73,130 @@ class pos_details(report_sxw.rml_parse):
             ('state', 'in', ['done', 'paid', 'invoiced']),
             ('company_id', '=', company_id)
         ])
-        for pos in pos_obj.browse(self.cr, self.uid, pos_ids, context=self.localcontext):
-            repeat = 0 
-            for pol in pos.lines:
-                if product_id and pol.product_id.product_tmpl_id.id == product_id:
-                    mrp_bom_obj = self.pool.get('mrp.bom')
-                    mrp_bom_ids = mrp_bom_obj.search(self.cr, self.uid, [('product_tmpl_id','=',product_id)])
-                    if mrp_bom_ids:
-                        print "Bom Found"
-                        mrp_bom = mrp_bom_obj.browse(self.cr, self.uid, mrp_bom_ids[0])
-                        print mrp_bom
-                        bom_line_ids = mrp_bom.bom_line_ids
-                        for bom_line_id in bom_line_ids:
-                            if repeat == 0:          
-                                transaction_result = {
-                                    'code': pol.product_id.default_code,
-                                    'name': bom_line_id.product_id.name,
-                                    #'invoice_id': pol.invoice_id.id, 
-                                    'invoice_id': '',
-                                    #'price_unit': pol.price_unit, 
-                                    'qty': pol.qty * bom_line_id.product_qty, 
-                                    #'discount': pol.discount, 
-                                    #'total': (pol.price_unit * pol.qty * (1 - (pol.discount) / 100.0)), 
-                                    'date_order': pos.date_order, 
-                                    'pos_name': pos.name, 
-                                    'uom': bom_line_id.product_id.uom_id.name
-                                }
-                                repeat = repeat + 1
-                            else:
-                                transaction_result = {
-                                    'code': '',
-                                    'name': bom_line_id.product_id.name,
-                                    #'invoice_id': pol.invoice_id.id, 
-                                    'invoice_id': '',
-                                    #'price_unit': pol.price_unit, 
-                                    'qty': pol.qty * bom_line_id.product_qty, 
-                                    #'discount': pol.discount, 
-                                    #'total': (pol.price_unit * pol.qty * (1 - (pol.discount) / 100.0)), 
-                                    'date_order': '', 
-                                    'pos_name': pos.name, 
-                                    'uom': bom_line_id.product_id.uom_id.name
-                                }   
-                            transaction_total.append(transaction_result)
-                            #self.total += result['total']
-                            self.qty += transaction_result['qty']
-                            
-                            #Lopping Total Per Product
-                            exist = False
-                            for i in range(0,len(product_total)):
-                                data_int = product_total[i]
-                                if data_int['product_id'] == bom_line_id.product_id.id:
-                                    exist = True
-                                    data_int['total'] = data_int['total'] + transaction_result['qty']
-                                    product_total[i] = data_int
-                            
-                                
-                            if exist == False:
-                                product_result = {
-                                    'product_id': bom_line_id.product_id.id,
-                                    'product_name': bom_line_id.product_id.name,
-                                    'total': transaction_result['qty'],
-                                    'uom': bom_line_id.product_id.uom_id.name,
-                                }
-                                product_total.append(product_result)
-                              
-                            #Lopping Total for All Product
-                            exist = False
-                            for i in range(0,len(self.product_final_total)):
-                                data_int = self.product_final_total[i]
-                                if data_int['product_id'] == bom_line_id.product_id.id:
-                                    exist = True
-                                    data_int['total'] = data_int['total'] + transaction_result['qty']
-                                    self.product_final_total[i] = data_int
-                            
-                                
-                            if exist == False:
-                                product_result = {
-                                    'product_id': bom_line_id.product_id.id,
-                                    'product_name': bom_line_id.product_id.name,
-                                    'total': transaction_result['qty'],
-                                    'uom': bom_line_id.product_id.uom_id.name,
-                                }
-                                self.product_final_total.append(product_result)
-                            
-                            
-                        #self.discount += result['discount']                                
-                    else:
-                        print "Bom not found"
-        data.append({'transaction_total':transaction_total,'product_total':product_total})
-        if data:
-            print data
-            print self.product_final_total
-            return data
-        else:
-            return {}
+        
+        query  = """SELECT 
+              pos_order.id,
+              pos_order.date_order,
+              pos_order.name,
+              pos_order_line.product_id,
+              product_product.default_code, 
+              product_product.name_template as product_product_name_template,
+              product_bom_line.name_template,
+              pos_order_line.qty as pos_order_line_qty,
+              product_uom.name as product_uom_name,
+              mrp_bom_line.product_qty as mrp_bom_line_product_qty,
+              mrp_bom_line.product_qty * pos_order_line.qty as total_qty
+            FROM pos_order
+            LEFT JOIN pos_order_line ON pos_order.id = pos_order_line.order_id 
+            LEFT JOIN product_product ON pos_order_line.product_id = product_product.id
+            LEFT JOIN product_template ON product_template.id = product_product.product_tmpl_id
+            LEFT JOIN product_uom ON product_uom.id = product_template.uom_id
+            LEFT JOIN mrp_bom ON product_template.id = mrp_bom.product_tmpl_id
+            LEFT JOIN mrp_bom_line ON mrp_bom.id = mrp_bom_line.bom_id
+            LEFT JOIN product_product as product_bom_line ON mrp_bom_line.product_id = product_bom_line.id
+            WHERE 
+              pos_order.id IN {} AND pos_order_line.product_id IN {}
+            ORDER BY id;""".format(tuple(pos_ids),tuple(product_ids))
+        self.cr.execute(query)
+        data = self.cr.dictfetchall()
+        return data
+        
 
+    def _get_per_product_bom_summary(self, product_id, form):
+        pos_obj = self.pool.get('pos.order')
+        user_obj = self.pool.get('res.users')
+        product_ids = []
+        product_ids.append(product_id)
+        product_ids.append(0)
+        company_id = user_obj.browse(self.cr, self.uid, self.uid).company_id.id
+        user = self.pool['res.users'].browse(self.cr, self.uid, self.uid)
+        tz_name = user.tz or self.localcontext.get('tz') or 'UTC'
+        user_tz = pytz.timezone(tz_name)
+        
+        between_dates = {}
+        for date_field, delta in {'date_start': {'days': 0}, 'date_end': {'days': 1}}.items():
+            timestamp = datetime.datetime.strptime(form[date_field] + ' 00:00:00', tools.DEFAULT_SERVER_DATETIME_FORMAT) + datetime.timedelta(**delta)
+            timestamp = user_tz.localize(timestamp).astimezone(pytz.utc)
+            between_dates[date_field] = timestamp.strftime(tools.DEFAULT_SERVER_DATETIME_FORMAT)
+
+        pos_ids = pos_obj.search(self.cr, self.uid, [
+            ('date_order', '>=', between_dates['date_start']),
+            ('date_order', '<', between_dates['date_end']),
+            ('state', 'in', ['done', 'paid', 'invoiced']),
+            ('company_id', '=', company_id)
+        ])
+            
+        query = """SELECT  
+                  product_bom_line.name_template,
+                  sum(mrp_bom_line.product_qty * pos_order_line.qty) as total_qty,
+                  product_uom.name as product_uom_name
+                FROM pos_order
+                LEFT JOIN pos_order_line ON pos_order.id = pos_order_line.order_id 
+                LEFT JOIN product_product ON pos_order_line.product_id = product_product.id
+                LEFT JOIN product_template on product_template.id = product_product.product_tmpl_id
+                LEFT JOIN product_uom ON product_uom.id = product_template.uom_id
+                LEFT JOIN mrp_bom ON product_template.id = mrp_bom.product_tmpl_id
+                LEFT JOIN mrp_bom_line ON mrp_bom.id = mrp_bom_line.bom_id
+                LEFT JOIN product_product as product_bom_line ON mrp_bom_line.product_id = product_bom_line.id
+                WHERE 
+                  pos_order.id IN {} AND pos_order_line.product_id IN {}
+                GROUP BY
+                  product_bom_line.name_template, product_uom.name;""".format(tuple(pos_ids),tuple(product_ids))
+            
+        self.cr.execute(query)
+        data = self.cr.dictfetchall()
+        return data
+    
+    def _get_bom_summary(self, form):
+        pos_obj = self.pool.get('pos.order')
+        user_obj = self.pool.get('res.users')
+        product_obj = self.pool.get('product.product')
+        
+        product_args = [('product_tmpl_id','in',form['product_ids'])]
+        product_ids = product_obj.search(self.cr, self.uid, product_args) 
+        if len(product_ids) == 1:
+            product_ids.append(0)
+                    
+        company_id = user_obj.browse(self.cr, self.uid, self.uid).company_id.id
+        user = self.pool['res.users'].browse(self.cr, self.uid, self.uid)
+        tz_name = user.tz or self.localcontext.get('tz') or 'UTC'
+        user_tz = pytz.timezone(tz_name)
+        
+        between_dates = {}
+        for date_field, delta in {'date_start': {'days': 0}, 'date_end': {'days': 1}}.items():
+            timestamp = datetime.datetime.strptime(form[date_field] + ' 00:00:00', tools.DEFAULT_SERVER_DATETIME_FORMAT) + datetime.timedelta(**delta)
+            timestamp = user_tz.localize(timestamp).astimezone(pytz.utc)
+            between_dates[date_field] = timestamp.strftime(tools.DEFAULT_SERVER_DATETIME_FORMAT)
+
+        pos_ids = pos_obj.search(self.cr, self.uid, [
+            ('date_order', '>=', between_dates['date_start']),
+            ('date_order', '<', between_dates['date_end']),
+            ('state', 'in', ['done', 'paid', 'invoiced']),
+            ('company_id', '=', company_id)
+        ])
+        
+        
+        query = """SELECT  
+                      product_bom_line.name_template,
+                      sum(mrp_bom_line.product_qty * pos_order_line.qty) as total_qty,
+                      product_uom.name as product_uom_name
+                    FROM pos_order
+                    LEFT JOIN pos_order_line ON pos_order.id = pos_order_line.order_id 
+                    LEFT JOIN product_product ON pos_order_line.product_id = product_product.id
+                    LEFT JOIN product_template on product_template.id = product_product.product_tmpl_id
+                    LEFT JOIN product_uom ON product_uom.id = product_template.uom_id
+                    LEFT JOIN mrp_bom ON product_template.id = mrp_bom.product_tmpl_id
+                    LEFT JOIN mrp_bom_line ON mrp_bom.id = mrp_bom_line.bom_id
+                    LEFT JOIN product_product as product_bom_line ON mrp_bom_line.product_id = product_bom_line.id
+                    WHERE 
+                      pos_order.id IN {} AND pos_order_line.product_id IN {} 
+                    GROUP BY
+                      product_bom_line.name_template, product_uom.name;""".format(tuple(pos_ids),tuple(product_ids))
+        
+        self.cr.execute(query)
+        data = self.cr.dictfetchall()
+        return data
+        
     def _get_product_final_total(self):
         return self.product_final_total
     
@@ -288,7 +310,8 @@ class pos_details(report_sxw.rml_parse):
             'time': time,
             'selected_products': self._get_selected_products,
             'pos_sales_details': self._pos_sales_details,
-            'product_final_total': self._get_product_final_total,
+            'per_product_bom_summary': self._get_per_product_bom_summary,
+            'bom_summary': self._get_bom_summary,
         })
 
 

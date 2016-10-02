@@ -5,12 +5,13 @@
     'name': 'Point of Sale - Enchance Report',
     'version': '1.0.1',
     'category': 'Point Of Sale',
+    'author': 'Jakc Labs',
     'sequence': 20,
-    'summary': 'Touchscreen Interface for Shops',
+    'summary': 'Point of Sale - Enchance Report',
     'description': """
 Point of Sale - Enchance Report
 ===============================
-
+Point of Sale - Enchance Report
     """,
     'depends': ['point_of_sale'],
     'data': [
