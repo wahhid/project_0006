@@ -58,6 +58,7 @@ Main Features
         'views/report_receipt.xml',
         'views/report_saleslines.xml',
         'views/report_detailsofsales.xml',
+        'views/report_order_products.xml',
         'views/report_payment.xml',
         'views/report_sessionsummary.xml',
         'views/report_userlabel.xml',

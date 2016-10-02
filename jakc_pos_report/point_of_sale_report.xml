@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<openerp>
+    <data>
+        
+        <report
+            id="pos_order_reports"
+            string="Products of Sales"
+            model="pos.order"
+            report_type="qweb-pdf"
+            name="jakc_pos_report.report_orderproducts"
+            file="jakc_pos_report.report_orderproducts"
+            menu="False"
+         />
+         
+    </data>
+    <menuitem action="action_report_pos_order_products" id="menu_pos_order_products" parent="point_of_sale.menu_point_rep" sequence="6" />
+</openerp>

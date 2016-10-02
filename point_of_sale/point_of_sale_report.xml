@@ -48,6 +48,16 @@
             file="point_of_sale.report_detailsofsales"
             menu="False"
          />
+         
+         <report
+            id="pos_lines_detail_product"
+            string="Details of Sales Product"
+            model="pos.order"
+            report_type="qweb-pdf"
+            name="point_of_sale.report_detailsofsalesproduct"
+            file="point_of_sale.report_detailsofsalesproduct"
+            menu="False"
+         />
 
         <report
             id="pos_payment_report"

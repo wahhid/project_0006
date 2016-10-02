@@ -140,6 +140,38 @@ var CardNumberPopupWidget = PopupWidget.extend({
 gui.define_popup({name:'cardnumber', widget: CardNumberPopupWidget});
 
 PaymentScreenWidget.include({
+	
+			payment_input: function(input) {
+				var self = this;
+		        var newbuf = this.gui.numpad_input(this.inputbuffer, input, {'firstinput': this.firstinput});
+		
+		        this.firstinput = (newbuf.length === 0);
+		
+		        // popup block inputs to prevent sneak editing. 
+		        if (this.gui.has_popup()) {
+		        	this.inputtext = this.inputtext + input;
+		        	console.log(this.inputtext)
+		        	this.$('#cardnumber').val(this.inputtext);
+		            return;
+		        }
+		        
+		        if (newbuf !== this.inputbuffer) {
+		            this.inputbuffer = newbuf;
+		            var order = this.pos.get_order();
+		            if (order.selected_paymentline) {
+		                var amount = this.inputbuffer;
+		
+		                if (this.inputbuffer !== "-") {
+		                    amount = formats.parse_value(this.inputbuffer, {type: "float"}, 0.0);
+		                }
+		
+		                order.selected_paymentline.set_amount(amount);
+		                this.order_changes();
+		                this.render_paymentlines();
+		                this.$('.paymentline.selected .edit').text(this.format_currency_no_symbol(amount));
+		            }
+		        }
+		    },
         	   
             click_card_paymentline: function(cid){
                 var self = this;
@@ -147,7 +179,7 @@ PaymentScreenWidget.include({
             	var lines = order.get_paymentlines();
                 for ( var i = 0; i < lines.length; i++ ) {
                     if (lines[i].cid === cid) {
-        				self.gui.show_popup('textinput',{
+        				self.gui.show_popup('cardnumber',{
         				    'title': _t('Card Number'),
         		            'value': order.selected_paymentline.cardnumber,
         		            'confirm': function(value) {
