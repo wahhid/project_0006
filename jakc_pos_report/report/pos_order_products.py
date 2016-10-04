@@ -83,17 +83,19 @@ class pos_details(report_sxw.rml_parse):
               product_product.name_template as product_product_name_template,
               product_bom_line.name_template,
               pos_order_line.qty as pos_order_line_qty,
-              product_uom.name as product_uom_name,
+              product_uom_bom_line.name as product_uom_name,
               mrp_bom_line.product_qty as mrp_bom_line_product_qty,
               mrp_bom_line.product_qty * pos_order_line.qty as total_qty
             FROM pos_order
             LEFT JOIN pos_order_line ON pos_order.id = pos_order_line.order_id 
-            LEFT JOIN product_product ON pos_order_line.product_id = product_product.id
-            LEFT JOIN product_template ON product_template.id = product_product.product_tmpl_id
-            LEFT JOIN product_uom ON product_uom.id = product_template.uom_id
-            LEFT JOIN mrp_bom ON product_template.id = mrp_bom.product_tmpl_id
-            LEFT JOIN mrp_bom_line ON mrp_bom.id = mrp_bom_line.bom_id
-            LEFT JOIN product_product as product_bom_line ON mrp_bom_line.product_id = product_bom_line.id
+                    LEFT JOIN product_product ON pos_order_line.product_id = product_product.id
+                    LEFT JOIN product_template on product_template.id = product_product.product_tmpl_id
+                    LEFT JOIN product_uom ON product_uom.id = product_template.uom_id
+                    LEFT JOIN mrp_bom ON product_template.id = mrp_bom.product_tmpl_id
+                    LEFT JOIN mrp_bom_line ON mrp_bom.id = mrp_bom_line.bom_id
+                    LEFT JOIN product_product as product_bom_line ON mrp_bom_line.product_id = product_bom_line.id
+                    LEFT JOIN product_template as product_template_bom_line on product_template_bom_line.id = product_bom_line.product_tmpl_id
+                    LEFT JOIN product_uom as product_uom_bom_line ON product_uom_bom_line.id = product_template_bom_line.uom_id
             WHERE 
               pos_order.id IN {} AND pos_order_line.product_id IN {}
             ORDER BY id;""".format(tuple(pos_ids),tuple(product_ids))
@@ -129,19 +131,21 @@ class pos_details(report_sxw.rml_parse):
         query = """SELECT  
                   product_bom_line.name_template,
                   sum(mrp_bom_line.product_qty * pos_order_line.qty) as total_qty,
-                  product_uom.name as product_uom_name
+                  product_uom_bom_line.name as product_uom_name
                 FROM pos_order
                 LEFT JOIN pos_order_line ON pos_order.id = pos_order_line.order_id 
-                LEFT JOIN product_product ON pos_order_line.product_id = product_product.id
-                LEFT JOIN product_template on product_template.id = product_product.product_tmpl_id
-                LEFT JOIN product_uom ON product_uom.id = product_template.uom_id
-                LEFT JOIN mrp_bom ON product_template.id = mrp_bom.product_tmpl_id
-                LEFT JOIN mrp_bom_line ON mrp_bom.id = mrp_bom_line.bom_id
-                LEFT JOIN product_product as product_bom_line ON mrp_bom_line.product_id = product_bom_line.id
-                WHERE 
+                    LEFT JOIN product_product ON pos_order_line.product_id = product_product.id
+                    LEFT JOIN product_template on product_template.id = product_product.product_tmpl_id
+                    LEFT JOIN product_uom ON product_uom.id = product_template.uom_id
+                    LEFT JOIN mrp_bom ON product_template.id = mrp_bom.product_tmpl_id
+                    LEFT JOIN mrp_bom_line ON mrp_bom.id = mrp_bom_line.bom_id
+                    LEFT JOIN product_product as product_bom_line ON mrp_bom_line.product_id = product_bom_line.id
+                    LEFT JOIN product_template as product_template_bom_line on product_template_bom_line.id = product_bom_line.product_tmpl_id
+                    LEFT JOIN product_uom as product_uom_bom_line ON product_uom_bom_line.id = product_template_bom_line.uom_id
+                    WHERE 
                   pos_order.id IN {} AND pos_order_line.product_id IN {}
                 GROUP BY
-                  product_bom_line.name_template, product_uom.name;""".format(tuple(pos_ids),tuple(product_ids))
+                  product_bom_line.name_template, product_uom_bom_line.name;""".format(tuple(pos_ids),tuple(product_ids))
             
         self.cr.execute(query)
         data = self.cr.dictfetchall()
@@ -179,7 +183,7 @@ class pos_details(report_sxw.rml_parse):
         query = """SELECT  
                       product_bom_line.name_template,
                       sum(mrp_bom_line.product_qty * pos_order_line.qty) as total_qty,
-                      product_uom.name as product_uom_name
+                      product_uom_bom_line.name as product_uom_name
                     FROM pos_order
                     LEFT JOIN pos_order_line ON pos_order.id = pos_order_line.order_id 
                     LEFT JOIN product_product ON pos_order_line.product_id = product_product.id
@@ -188,10 +192,12 @@ class pos_details(report_sxw.rml_parse):
                     LEFT JOIN mrp_bom ON product_template.id = mrp_bom.product_tmpl_id
                     LEFT JOIN mrp_bom_line ON mrp_bom.id = mrp_bom_line.bom_id
                     LEFT JOIN product_product as product_bom_line ON mrp_bom_line.product_id = product_bom_line.id
+                    LEFT JOIN product_template as product_template_bom_line on product_template_bom_line.id = product_bom_line.product_tmpl_id
+                    LEFT JOIN product_uom as product_uom_bom_line ON product_uom_bom_line.id = product_template_bom_line.uom_id
                     WHERE 
                       pos_order.id IN {} AND pos_order_line.product_id IN {} 
                     GROUP BY
-                      product_bom_line.name_template, product_uom.name;""".format(tuple(pos_ids),tuple(product_ids))
+                      product_bom_line.name_template, product_uom_bom_line.name;""".format(tuple(pos_ids),tuple(product_ids))
         
         self.cr.execute(query)
         data = self.cr.dictfetchall()
